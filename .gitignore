@@ -1,0 +1,51 @@
+# === Build Maven ===
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# === Logs ===
+*.log
+logs/
+
+# === Config locale / secrets ===
+.env
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+
+# === VS Code ===
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# === IntelliJ (au cas où) ===
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# === Eclipse / STS ===
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+# === NetBeans ===
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.in

@@ -1,15 +1,16 @@
 package fr.diginamic.hello_tp1.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.diginamic.hello_tp1.dao.VilleDao;
 import fr.diginamic.hello_tp1.entities.Ville;
-import jakarta.annotation.PostConstruct;
+import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
+import jakarta.validation.Valid;
 
+// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,81 +21,88 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 
-
-
 @RestController
 @RequestMapping("/villes")
 public class VilleController {
-    private List<Ville> villes;
-    private int nextId = 1;
+    private final VilleDao villeDao;
 
-    @PostConstruct
-    public void initData() {
-        villes = new ArrayList<>();
-        ajouter(new Ville("Paris", 2133111));
-        ajouter(new Ville("Marseille", 873076));
-        ajouter(new Ville("Lyon", 522250));
-        ajouter(new Ville("Toulouse", 504078));
-        ajouter(new Ville("Nice", 348085));
-        ajouter(new Ville("Nantes", 323204));
-        ajouter(new Ville("Montpellier", 302454));
-        ajouter(new Ville("Strasbourg", 291313));
-        ajouter(new Ville("Bordeaux", 261804));
-        ajouter(new Ville("Lille", 236710));
+
+    VilleController(VilleDao villeDao) {
+        this.villeDao = villeDao;
     }
-
+    
+    
+    
     @PostMapping
-    public ResponseEntity<String> insertVille(@RequestBody Ville newVille){
-        for (Ville v : villes) {
-            if (v.getNom().equalsIgnoreCase(newVille.getNom())) {
-                return ResponseEntity.badRequest().body("La ville existe déjà");   // 400
-            }
-        } 
-        ajouter(newVille);
+    public ResponseEntity<String> insertVille(@Valid @RequestBody Ville newVille)throws ExceptionFonctionnelle{
+        if (villeDao.villeExiste(newVille)) {
+            throw new ExceptionFonctionnelle("La ville d'id " + newVille.getNom() + "existe déjà)");
+        }
+        villeDao.insert(newVille);
         return ResponseEntity.status(HttpStatus.CREATED).body("Ville ajouté avec succes");   
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateVille(@PathVariable int id, @RequestBody Ville newVille) {
-        for (Ville ville : villes) {
-            if (ville.getId() == id) {
-                ville.setNom(newVille.getNom());
-                ville.setPopulation(newVille.getPopulation());
-                return ResponseEntity.ok("Ville mise à jour avec succès");     
-            }
+    public ResponseEntity<String> updateVille( @PathVariable int id,@Valid @RequestBody Ville newVille) throws ExceptionFonctionnelle {
+        if (!villeDao.update(id, newVille)) {
+            throw new ExceptionFonctionnelle("La ville d'id " + id + " n'existe pas");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La ville n'existe pas");  
+        return ResponseEntity.ok("Ville mise à jour avec succès");
     }
 
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteVille(@PathVariable int id) {
-        boolean supprimee = villes.removeIf(v -> v.getId() == id);
-        if (supprimee) {
-            return ResponseEntity.ok("Ville supprimée avec succès");            
+    public ResponseEntity<String> deleteVille(@PathVariable int id) throws ExceptionFonctionnelle {
+        if (!villeDao.delete(id)) {
+            throw new ExceptionFonctionnelle("La ville d'id " + id + " n'existe pas");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La ville n'existe pas");
+        return ResponseEntity.ok("Ville supprimée avec succès");
     }
 
     @GetMapping
     public List<Ville> getAllVilles() {
-        return villes;
+        return villeDao.findAll();
     }
 
-    @GetMapping("/{id")
-    public Ville getVilleById(@RequestParam Integer id){
-        for (Ville ville : villes) {
-            if (ville.getId() == id) {
-                return ville;
-            }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getVilleById(@PathVariable int id) throws ExceptionFonctionnelle{
+        if (villeDao.findById(id) == null) {
+            throw new ExceptionFonctionnelle("La ville d'id " + id + "n'existe pas");
         }
-        return null;
+        return ResponseEntity.ok(villeDao.findById(id));     
+    
     }
 
-
-    private Ville ajouter(Ville ville) {
-        ville.setId(nextId++);
-        villes.add(ville);
-        return ville;
+    @GetMapping("/contiennent/{prefix}")
+    public List<Ville> getVilleCommencePar(@PathVariable String prefix)throws ExceptionFonctionnelle {
+        List<Ville> resultat = villeDao.findAllWhoStart(prefix);
+        if (resultat.isEmpty()) {
+            throw new ExceptionFonctionnelle("Aucune ville dont le nom commance par " + prefix + "n'a été trouvé");
+        }
+        return resultat;    
     }
+    
+    @GetMapping("/population/{min}")
+    public List<Ville> getVillePopSuperieur(@PathVariable Integer min)throws ExceptionFonctionnelle {
+        List<Ville> resultat = villeDao.extraireParPopulation(min, Integer.MAX_VALUE);
+        if (resultat.isEmpty()) {
+            throw new ExceptionFonctionnelle("Aucune ville n'a une population supérieur à " + min);
+        }
+        return resultat;    
+    }
+    
+
+    @GetMapping("/population/{min}/{max}")
+    public List<Ville> getVilleEntre(@PathVariable Integer min,@PathVariable Integer max)throws ExceptionFonctionnelle {
+        if (min>max) {
+            throw new ExceptionFonctionnelle(min + " supérieur à " + max);
+        }
+        List<Ville> resultat = villeDao.extraireParPopulation(min, max);
+        if (resultat.isEmpty()) {
+            throw new ExceptionFonctionnelle("Aucune ville n'a une population comprise entre " + min +" et "+ max);
+        }
+        return resultat;    
+    }
+
 }

@@ -1,6 +1,5 @@
 package fr.diginamic.hello_tp1.services;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import fr.diginamic.hello_tp1.dao.DepartementDao;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.entities.Ville;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
+import fr.diginamic.hello_tp1.repositories.DepartementRepository;
 
 /**
  * Service contenant les règles métier sur les départements.
@@ -18,16 +18,18 @@ import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 @Service
 public class DepartementService {
 
+    // @Autowired
+    // private DepartementDao departementDao;
     @Autowired
-    private DepartementDao departementDao;
+    private DepartementRepository departementRepository;
 
     /**
      * Renvoie tous les départements.
      *
      * @return liste des départements
      */
-    public List<Departement> extractAll(){
-        return departementDao.findAll();
+    public Iterable<Departement> extractAll(){
+        return departementRepository.findAll();
     }
 
     /**
@@ -38,9 +40,8 @@ public class DepartementService {
      * @throws ExceptionFonctionnelle si aucun département ne correspond à cet identifiant
      */
     public Departement extractById(Integer id)throws ExceptionFonctionnelle{
-        Departement Departement = departementDao.findById(id);
-        if (Departement == null) throw new ExceptionFonctionnelle("Aucune Departement avec l'id " + id);
-        return Departement;
+        Departement departement = departementRepository.findById(id).orElseThrow(() -> new ExceptionFonctionnelle("Aucune ville avec l'id " + id));
+        return departement;
     }
 
     /**
@@ -50,8 +51,8 @@ public class DepartementService {
      * @return le département trouvé
      * @throws ExceptionFonctionnelle si aucun département ne correspond à ce code
      */
-    public Departement extractByCode(Integer code)throws ExceptionFonctionnelle{
-        Departement Departement = departementDao.findByCode(code);
+    public Departement extractByCode(String code)throws ExceptionFonctionnelle{
+        Departement Departement = departementRepository.findByCode(code);
         if (Departement == null) throw new ExceptionFonctionnelle("Aucun Departement avec ce code " + code);
         return Departement;
     }
@@ -63,10 +64,10 @@ public class DepartementService {
      * @param code code du département (peut être null)
      * @return le département trouvé, ou null s'il n'existe pas
      */
-    public Departement extractByIdOrCode(Integer id, Integer code) {
+    public Departement extractByIdOrCode(Integer id, String code) {
         Departement dep = null;
-        if (id != null) dep = departementDao.findById(id);
-        if (dep == null && code != null) dep = departementDao.findByCode(code);
+        if (id != null) dep = departementRepository.findById(id).orElse(null);
+        if (dep == null && code != null) dep = departementRepository.findByCode(code);
         return dep;
     }
 
@@ -78,10 +79,10 @@ public class DepartementService {
      */
     @Transactional
     public void insertDepartement(Departement departement) throws ExceptionFonctionnelle {
-        if (departementDao.findByCode(departement.getCode()) != null) {
+        if (departementRepository.findByCode(departement.getCode()) != null) {
             throw new ExceptionFonctionnelle("Un département avec le code " + departement.getCode() + " existe déjà");
         }
-        departementDao.insert(departement);
+        departementRepository.save(departement);
     }
 
     /**
@@ -93,9 +94,12 @@ public class DepartementService {
      */
     @Transactional
     public void updateDepartement(Integer id, Departement newDepartement) throws ExceptionFonctionnelle {
-        Departement Departement = departementDao.findById(id);
-        if (Departement == null) throw new ExceptionFonctionnelle("Aucune Departement avec l'id " + id);
-        departementDao.update(id, newDepartement);
+        Departement departement = departementRepository.findById(id).orElse(null);
+        if (departement == null) throw new ExceptionFonctionnelle("Aucune Departement avec l'id " + id);
+        departement.setCode(newDepartement.getCode());
+        departement.setNom(newDepartement.getNom());
+        departement.setVilles(newDepartement.getVilles());
+        departementRepository.save(newDepartement);
     }
 
     /**
@@ -106,9 +110,8 @@ public class DepartementService {
      */
     @Transactional 
     public void deleteDepartement(Integer id) throws ExceptionFonctionnelle {
-        Departement Departement = departementDao.findById(id);
-        if (Departement == null) throw new ExceptionFonctionnelle("Aucune Departement avec l'id " + id);
-        departementDao.delete(id);
+        Departement Departement = departementRepository.findById(id).orElseThrow(() -> new ExceptionFonctionnelle("Aucun département avec l'id " + id));
+        departementRepository.delete(Departement);
     }
 
 
@@ -119,10 +122,10 @@ public class DepartementService {
      * @return le département créé
      */
     @Transactional
-    public Departement creerDepartement(Integer code) {
+    public Departement creerDepartement(String code) {
         Departement dep = new Departement();
         dep.setCode(code);
-        departementDao.insert(dep);
+        departementRepository.save(dep);
         return dep;
     }
 

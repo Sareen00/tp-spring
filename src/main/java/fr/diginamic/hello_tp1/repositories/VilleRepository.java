@@ -2,9 +2,9 @@ package fr.diginamic.hello_tp1.repositories;
 
 import java.util.List;
 
-import org.springframework.boot.data.autoconfigure.web.DataWebProperties.Pageable;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 import fr.diginamic.hello_tp1.entities.Ville;

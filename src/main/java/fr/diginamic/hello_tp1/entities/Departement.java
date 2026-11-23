@@ -23,7 +23,7 @@ public class Departement {
     private String nom;
 
 
-    private Integer code;
+    private String code;
 
     @OneToMany (mappedBy = "departement")
     private Set<Ville> villes = new HashSet<>();
@@ -65,14 +65,14 @@ public class Departement {
     /**
      * @return code
      */
-    public Integer getCode() {
+    public String getCode() {
         return code;
     }
 
     /**
      * @param code code à définir
      */
-    public void setCode(Integer code) {
+    public void setCode(String code) {
         this.code = code;
     }
 

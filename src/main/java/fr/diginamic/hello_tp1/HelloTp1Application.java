@@ -17,5 +17,4 @@ public class HelloTp1Application {
 	public static void main(String[] args) {
 		SpringApplication.run(HelloTp1Application.class, args);
 	}
-
 }

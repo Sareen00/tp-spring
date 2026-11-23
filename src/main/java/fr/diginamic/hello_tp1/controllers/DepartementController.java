@@ -42,7 +42,7 @@ public class DepartementController {
      * @return liste des départements
      */
     @GetMapping
-    public List<Departement> getAllDepartements() {
+    public Iterable<Departement> getAllDepartements() {
         return departementService.extractAll();
     }
 

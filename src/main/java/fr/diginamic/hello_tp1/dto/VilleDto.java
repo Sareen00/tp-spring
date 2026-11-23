@@ -21,7 +21,7 @@ public class VilleDto {
     private Integer population; 
 
     private Integer idDepartement;
-    private Integer codeDepartement;
+    private String codeDepartement;
 
     /**
      * Convertit une entité Ville en VilleDto.
@@ -113,14 +113,14 @@ public class VilleDto {
     /**
      * @return codeDepartement
      */
-    public Integer getCodeDepartement() {
+    public String getCodeDepartement() {
         return codeDepartement;
     }
 
     /**
      * @param codeDepartement codeDepartement à définir
      */
-    public void setCodeDepartement(Integer codeDepartement) {
+    public void setCodeDepartement(String codeDepartement) {
         this.codeDepartement = codeDepartement;
     }
 

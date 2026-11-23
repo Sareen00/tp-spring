@@ -3,19 +3,24 @@ package fr.diginamic.hello_tp1.controllers;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.diginamic.hello_tp1.dao.VilleDao;
 import fr.diginamic.hello_tp1.dto.VilleDto;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.entities.Ville;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.hello_tp1.services.DepartementService;
 import fr.diginamic.hello_tp1.services.VilleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,9 +51,22 @@ public class VilleController {
      *
      * @return liste des villes
      */
+    @Operation(summary = "Retourne la liste de toutes les villes")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200",
+            description = "Liste des villes au format JSON",
+            content={@Content(mediaType = "application/json",array = @ArraySchema(schema = 
+                @Schema(implementation = VilleDto.class)
+            ))})
+    })
     @GetMapping
     public List<VilleDto> getAllVilles() {
         return villeService.extractVilles().stream().map(villeDto::toDto).toList();
+    }
+
+    @GetMapping("/paginate/{page}")
+    public List<VilleDto> extraireAllPaginateVilles(@PathVariable Integer page, @RequestParam(defaultValue = "10") int size) {
+        return villeService.extractVillesPaginate(page, size).stream().map(villeDto::toDto).toList();
     }
 
     /**
@@ -58,6 +76,15 @@ public class VilleController {
      * @return la ville trouvée
      * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
      */
+    @Operation(summary = "Retourne une ville à partir de son identifiant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200",
+            description = "Récupère une ville au format JSON",
+            content = {@Content(mediaType = "application/json",
+                schema = @Schema(implementation = VilleDto.class))}),
+        @ApiResponse(responseCode = "404",
+            description = "Ville non trouvée", content = @Content())
+    })
     @GetMapping("/{id}")
     public VilleDto getVilleById(@PathVariable int id) throws ExceptionFonctionnelle{
         return villeDto.toDto(villeService.extractVille(id));    
@@ -73,8 +100,17 @@ public class VilleController {
      * @return message de confirmation avec le statut 201
      * @throws ExceptionFonctionnelle si le département est inconnu ou si la ville existe déjà
      */
+    @Operation(summary = "Créer une ville")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201",
+            description = "Créer une ville au format JSON",
+            content = {@Content(mediaType = "application/json",
+                schema = @Schema(implementation = VilleDto.class))}),
+        @ApiResponse(responseCode = "400",
+            description = "Ville existe déjà", content = @Content())
+    })
     @PostMapping
-    public ResponseEntity<String> insertVille(@Valid @RequestBody VilleDto newVilleDto)throws ExceptionFonctionnelle{
+    public ResponseEntity<VilleDto> insertVille(@Valid @RequestBody VilleDto newVilleDto)throws ExceptionFonctionnelle{
         Departement dep = departementService.extractByIdOrCode(newVilleDto.getIdDepartement(), newVilleDto.getCodeDepartement());
         if (dep == null) {
             if (newVilleDto.getCodeDepartement() == null) throw new ExceptionFonctionnelle("Département inconnue");
@@ -83,9 +119,8 @@ public class VilleController {
         Ville ville = villeDto.toBean(newVilleDto);
         ville.setDepartement(dep);
         villeService.insertVille(ville);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Ville ajoutée avec succès");
+        return ResponseEntity.status(HttpStatus.CREATED).body(newVilleDto);
     }
-
 
 
     /**
@@ -103,9 +138,6 @@ public class VilleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dtos.size() + " villes ajoutées");
     }
 
-
-
-
     /**
      * Modifie une ville existante.
      *
@@ -114,6 +146,15 @@ public class VilleController {
      * @return liste de toutes les villes après modification
      * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
      */
+    @Operation(summary = "Met à jour un ville à partir de son identifiant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201",
+            description = "Met à jour une ville au format JSON",
+            content = {@Content(mediaType = "application/json", array = @ArraySchema(schema = 
+                @Schema(implementation = VilleDto.class)))}),
+        @ApiResponse(responseCode = "404",
+            description = "Ville n'existe pas", content = @Content())
+    })
     @PutMapping("/{id}")
     public ResponseEntity<List<VilleDto>> updateVille(@PathVariable int id, @Valid @RequestBody VilleDto newVilleDto) throws ExceptionFonctionnelle {
         villeService.updateVille(id, villeDto.toBean(newVilleDto));
@@ -127,6 +168,15 @@ public class VilleController {
      * @return liste de toutes les villes après suppression
      * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
      */
+    @Operation(summary = "Supprime une ville à partir de son identifiant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201",
+            description = "Supprime une ville par identifiant",
+            content = {@Content(mediaType = "application/json", array = @ArraySchema(schema = 
+                @Schema(implementation = VilleDto.class)))}),
+        @ApiResponse(responseCode = "404",
+            description = "Ville n'existe pas", content = @Content())
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<List<VilleDto>> deleteVille(@PathVariable int id) throws ExceptionFonctionnelle {
         villeService.deleteVille(id);

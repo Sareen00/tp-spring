@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,11 @@ public class VilleService {
         return villeRepository.findAll();
     }
 
+    public List<Ville> extractVillesPaginate(int page, int size) {
+        PageRequest pagination = PageRequest.of(page, size);
+        return villeRepository.findAll(pagination).getContent();
+    }
+
     /**
      * Renvoie une ville à partir de son identifiant.
      *
@@ -42,8 +48,7 @@ public class VilleService {
      * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
      */
     public Ville extractVille(Integer idVille)throws ExceptionFonctionnelle{
-        Ville ville = villeRepository.findById(idVille).orElse(null);
-        if (ville == null) throw new ExceptionFonctionnelle("Aucune ville avec l'id " + idVille);
+        Ville ville = villeRepository.findById(idVille).orElseThrow(() -> new ExceptionFonctionnelle("Aucune ville avec l'id " + idVille));
         return ville;
     }
 

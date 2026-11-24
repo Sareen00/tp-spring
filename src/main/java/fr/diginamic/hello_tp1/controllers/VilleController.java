@@ -1,26 +1,35 @@
 package fr.diginamic.hello_tp1.controllers;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
+
 import fr.diginamic.hello_tp1.dto.VilleDto;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.entities.Ville;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
-import fr.diginamic.hello_tp1.services.DepartementService;
-import fr.diginamic.hello_tp1.services.VilleService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import fr.diginamic.hello_tp1.services.interfaces.IDepartementService;
+import fr.diginamic.hello_tp1.services.interfaces.IVilleService;
+import fr.diginamic.hello_tp1.services.utils.CsvExportService;
+import fr.diginamic.hello_tp1.services.utils.PdfExportService;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,80 +46,57 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 @RestController
 @RequestMapping("/villes")
-public class VilleController {
+public class VilleController implements IVilleController {
 
-    @Autowired
-    private VilleService villeService;
-    @Autowired
-    private DepartementService departementService;
-    @Autowired 
-    private VilleDto villeDto;
+    private final IVilleService villeService;
+    private final IDepartementService departementService;
+    private final VilleDto villeDto;
+    private final PdfExportService pdfExportService;
+    private final CsvExportService csvExportService;
+
+    VilleController(IVilleService villeService, VilleDto villeDto,IDepartementService departementService,PdfExportService pdfExportService, CsvExportService csvExportService) {
+        this.villeService = villeService;
+        this.villeDto = villeDto;
+        this.departementService = departementService;
+        this.pdfExportService = pdfExportService;
+        this.csvExportService = csvExportService;
+    }
+
     
-    /**
-     * Renvoie la liste de toutes les villes.
-     *
-     * @return liste des villes
+    /** (non-Javadoc)
+     * @see IVilleController#getAllVilles()
      */
-    @Operation(summary = "Retourne la liste de toutes les villes")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Liste des villes au format JSON",
-            content={@Content(mediaType = "application/json",array = @ArraySchema(schema = 
-                @Schema(implementation = VilleDto.class)
-            ))})
-    })
+    @Override
     @GetMapping
     public List<VilleDto> getAllVilles() {
         return villeService.extractVilles().stream().map(villeDto::toDto).toList();
     }
 
+    /** (non-Javadoc)
+     * @see IVilleController#extraireAllPaginateVilles(java.lang.Integer, int)
+     */
+    @Override
     @GetMapping("/paginate/{page}")
     public List<VilleDto> extraireAllPaginateVilles(@PathVariable Integer page, @RequestParam(defaultValue = "10") int size) {
         return villeService.extractVillesPaginate(page, size).stream().map(villeDto::toDto).toList();
     }
 
-    /**
-     * Renvoie une ville à partir de son identifiant.
-     *
-     * @param id identifiant de la ville
-     * @return la ville trouvée
-     * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
+    /** (non-Javadoc)
+     * @see IVilleController#getVilleById(int)
      */
-    @Operation(summary = "Retourne une ville à partir de son identifiant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-            description = "Récupère une ville au format JSON",
-            content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = VilleDto.class))}),
-        @ApiResponse(responseCode = "404",
-            description = "Ville non trouvée", content = @Content())
-    })
+    @Override
     @GetMapping("/{id}")
-    public VilleDto getVilleById(@PathVariable int id) throws ExceptionFonctionnelle{
+    public VilleDto getVilleById(@Parameter(description = "identifiant de la ville à récupérer",example = "34", required = true) @PathVariable int id) throws ExceptionFonctionnelle{
         return villeDto.toDto(villeService.extractVille(id));    
     }
 
 
-    /**
-     * Ajoute une nouvelle ville.
-     * Le département est recherché par son identifiant ou son code.
-     * S'il n'existe pas et qu'un code est fourni, il est créé.
-     *
-     * @param newVilleDto ville à ajouter
-     * @return message de confirmation avec le statut 201
-     * @throws ExceptionFonctionnelle si le département est inconnu ou si la ville existe déjà
+    /** (non-Javadoc)
+     * @see IVilleController#insertVille(fr.diginamic.hello_tp1.dto.VilleDto)
      */
-    @Operation(summary = "Créer une ville")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201",
-            description = "Créer une ville au format JSON",
-            content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = VilleDto.class))}),
-        @ApiResponse(responseCode = "400",
-            description = "Ville existe déjà", content = @Content())
-    })
+    @Override
     @PostMapping
-    public ResponseEntity<VilleDto> insertVille(@Valid @RequestBody VilleDto newVilleDto)throws ExceptionFonctionnelle{
+    public ResponseEntity<VilleDto> insertVille(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "ville à créer (avec idDepartement ou codeDepartement)", required = true) @Valid @RequestBody VilleDto newVilleDto)throws ExceptionFonctionnelle{
         Departement dep = departementService.extractByIdOrCode(newVilleDto.getIdDepartement(), newVilleDto.getCodeDepartement());
         if (dep == null) {
             if (newVilleDto.getCodeDepartement() == null) throw new ExceptionFonctionnelle("Département inconnue");
@@ -123,13 +109,10 @@ public class VilleController {
     }
 
 
-    /**
-     * Ajoute plusieurs villes en une seule requête.
-     *
-     * @param dtos liste des villes à ajouter
-     * @return message indiquant le nombre de villes ajoutées
-     * @throws ExceptionFonctionnelle si une des villes ne peut pas être ajoutée
+    /** (non-Javadoc)
+     * @see IVilleController#insertVilles(java.util.List)
      */
+    @Override
     @PostMapping("/liste")
     public ResponseEntity<String> insertVilles(@RequestBody List<@Valid VilleDto> dtos) throws ExceptionFonctionnelle {
         for (VilleDto dto : dtos) {
@@ -138,88 +121,76 @@ public class VilleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dtos.size() + " villes ajoutées");
     }
 
-    /**
-     * Modifie une ville existante.
-     *
-     * @param id identifiant de la ville à modifier
-     * @param newVilleDto nouvelles valeurs de la ville
-     * @return liste de toutes les villes après modification
-     * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
+    /** (non-Javadoc)
+     * @see IVilleController#updateVille(int, fr.diginamic.hello_tp1.dto.VilleDto)
      */
-    @Operation(summary = "Met à jour un ville à partir de son identifiant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201",
-            description = "Met à jour une ville au format JSON",
-            content = {@Content(mediaType = "application/json", array = @ArraySchema(schema = 
-                @Schema(implementation = VilleDto.class)))}),
-        @ApiResponse(responseCode = "404",
-            description = "Ville n'existe pas", content = @Content())
-    })
+    @Override
     @PutMapping("/{id}")
-    public ResponseEntity<List<VilleDto>> updateVille(@PathVariable int id, @Valid @RequestBody VilleDto newVilleDto) throws ExceptionFonctionnelle {
+    public ResponseEntity<List<VilleDto>> updateVille(@Parameter(description = "identifiant de la ville à modifier", example = "34", required = true) @PathVariable int id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody (description = "nouvelles valeurs de la ville", required = true) @Valid @RequestBody VilleDto newVilleDto) throws ExceptionFonctionnelle {
         villeService.updateVille(id, villeDto.toBean(newVilleDto));
         return ResponseEntity.ok(villeService.extractVilles().stream().map(villeDto::toDto).toList());
     }
 
-    /**
-     * Supprime une ville.
-     *
-     * @param id identifiant de la ville à supprimer
-     * @return liste de toutes les villes après suppression
-     * @throws ExceptionFonctionnelle si aucune ville ne correspond à cet identifiant
+    /** (non-Javadoc)
+     * @see IVilleController#deleteVille(int)
      */
-    @Operation(summary = "Supprime une ville à partir de son identifiant")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201",
-            description = "Supprime une ville par identifiant",
-            content = {@Content(mediaType = "application/json", array = @ArraySchema(schema = 
-                @Schema(implementation = VilleDto.class)))}),
-        @ApiResponse(responseCode = "404",
-            description = "Ville n'existe pas", content = @Content())
-    })
+    @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<List<VilleDto>> deleteVille(@PathVariable int id) throws ExceptionFonctionnelle {
+    public ResponseEntity<List<VilleDto>> deleteVille(@Parameter(description = "identifiant de la ville à supprimer", example = "34", required = true) @PathVariable int id) throws ExceptionFonctionnelle {
         villeService.deleteVille(id);
         return ResponseEntity.ok(villeService.extractVilles().stream().map(villeDto::toDto).toList());
     }
 
 
-    /**
-     * Renvoie les villes dont le nom commence par une chaîne donnée.
-     *
-     * @param prefix début du nom recherché
-     * @return liste des villes trouvées
-     * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
+    /** (non-Javadoc)
+     * @see IVilleController#getVilleCommencePar(java.lang.String)
      */
+    @Override
     @GetMapping("/contiennent/{prefix}")
     public List<VilleDto> getVilleCommencePar(@PathVariable String prefix)throws ExceptionFonctionnelle {
         return villeService.extractVilles(prefix).stream().map(villeDto::toDto).toList();
     }
     
-    /**
-     * Renvoie les villes dont la population est supérieure ou égale à un minimum.
-     *
-     * @param min population minimum
-     * @return liste des villes trouvées
-     * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
+    /** (non-Javadoc)
+     * @see IVilleController#getVillePopSuperieur(java.lang.Integer)
      */
+    @Override
     @GetMapping("/population/{min}")
     public List<VilleDto> getVillePopSuperieur(@PathVariable Integer min)throws ExceptionFonctionnelle {
         return villeService.extractVilles(min, Integer.MAX_VALUE).stream().map(villeDto::toDto).toList();
     }
     
 
-    /**
-     * Renvoie les villes dont la population est comprise entre un min et un max.
-     *
-     * @param min population minimum
-     * @param max population maximum
-     * @return liste des villes trouvées
-     * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
+    /** (non-Javadoc)
+     * @see IVilleController#getVilleEntre(java.lang.Integer, java.lang.Integer)
      */
+    @Override
     @GetMapping("/population/{min}/{max}")
     public List<VilleDto> getVilleEntre(@PathVariable Integer min,@PathVariable Integer max)throws ExceptionFonctionnelle {
         return villeService.extractVilles(min, max).stream().map(villeDto::toDto).toList();
     }
 
+    @GetMapping("export/csv/{min}")
+    public void ficheFilm(@PathVariable Integer min,HttpServletResponse response)throws IOException,DocumentException, ExceptionFonctionnelle {
+        
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"villes.csv\"");
+        response.getWriter().write('\uFEFF');
+        csvExportService.genererCsvVilles(min, response.getWriter());
+        response.flushBuffer();
+    }
+
+    @GetMapping("/export/pdf/{code}")
+    public void ficheDepartement(@PathVariable String code,HttpServletResponse response)throws IOException,DocumentException, ExceptionFonctionnelle {
+        response.setContentType("application/pdf");
+        String nom = departementService.extractByCode(code).getNom();
+        response.setHeader("Content-Disposition", "attachment; filename=\""+ nom + ".pdf\"");
+
+        Document document = new Document(PageSize.A4);
+        PdfWriter.getInstance(document, response.getOutputStream());
+
+        pdfExportService.genererPdf(code, document);
+    }
+    
 }

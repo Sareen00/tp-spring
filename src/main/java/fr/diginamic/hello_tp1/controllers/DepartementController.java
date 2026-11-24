@@ -2,7 +2,6 @@ package fr.diginamic.hello_tp1.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,12 +27,16 @@ import jakarta.validation.Valid;
 @RequestMapping("/departements")
 public class DepartementController implements IDepartementController {
 
-    @Autowired 
-    private IVilleService villeService;
-    @Autowired
-    private IDepartementService departementService;
-    @Autowired 
-    private VilleDto villeDto;
+    private final IVilleService villeService;
+    private final IDepartementService departementService;
+    private final VilleDto villeDto;
+
+
+    DepartementController(IVilleService villeService, VilleDto villeDto, IDepartementService departementService) {
+        this.villeService = villeService;
+        this.villeDto = villeDto;
+        this.departementService = departementService;
+    }
 
 
     @Override

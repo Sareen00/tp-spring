@@ -2,7 +2,6 @@ package fr.diginamic.hello_tp1.services.utils;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -21,12 +20,9 @@ public class CsvExportService {
     }
 
     public void genererCsvVilles(Integer min, Writer writer) throws DocumentException, IOException, ExceptionFonctionnelle{
-        List<Ville> villes = villeService.extractVilles(min, Integer.MAX_VALUE);
         writer.write("Nom;Population;Code département;Nom département\n");
         for (Ville v : villeService.extractVilles(min, Integer.MAX_VALUE)) {
             writer.write(v.getNom() + ";" + v.getPopulation() + ";" + v.getDepartement().getCode() + ";" + v.getDepartement().getNom() + "\n");
         }
-
-
     }
 }

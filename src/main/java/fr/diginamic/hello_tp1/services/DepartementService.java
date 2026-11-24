@@ -3,15 +3,11 @@ package fr.diginamic.hello_tp1.services;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.BaseFont;
 
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
@@ -26,8 +22,12 @@ public class DepartementService implements IDepartementService {
 
     // @Autowired
     // private DepartementDao departementDao;
-    @Autowired
-    private DepartementRepository departementRepository;
+    private final DepartementRepository departementRepository;
+
+
+    DepartementService(DepartementRepository departementRepository) {
+        this.departementRepository = departementRepository;
+    }
 
 
     @Override
@@ -103,8 +103,5 @@ public class DepartementService implements IDepartementService {
         Departement departement = extractByCode(code);
         document.open();
         document.addTitle(departement.getNom());
-        BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
-        // Phrase p1 = new Phrase("Code du département" + , new Font(baseFont,32.0f, Font.BOLD, new BaseColor(0,0,0)));
-
     }
 }

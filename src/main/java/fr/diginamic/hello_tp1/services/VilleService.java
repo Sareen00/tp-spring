@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,8 +24,12 @@ public class VilleService implements IVilleService {
     // private VilleDao villeDao;
 
     private static final Logger LOG = LoggerFactory.getLogger(VilleService.class);
-    @Autowired
-    private VilleRepository villeRepository;
+    private final VilleRepository villeRepository;
+
+
+    VilleService(VilleRepository villeRepository) {
+        this.villeRepository = villeRepository;
+    }
 
 
     @Override

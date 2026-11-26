@@ -8,6 +8,9 @@ import fr.diginamic.hello_tp1.dto.VilleDto;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 
+/**
+ * Contrat du contrôleur REST des départements.
+ */
 public interface IDepartementController {
 
     /**
@@ -62,7 +65,7 @@ public interface IDepartementController {
      * @return liste des villes triées par population décroissante
      * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
      */
-    List<VilleDto> getPlusGrandeVille(Integer code, Integer nb) throws ExceptionFonctionnelle;
+    List<VilleDto> getPlusGrandeVille(String code, Integer nb) throws ExceptionFonctionnelle;
 
     /**
      * Renvoie les villes d'un département dont la population est comprise entre un min et un max.
@@ -73,6 +76,6 @@ public interface IDepartementController {
      * @return liste des villes trouvées
      * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
      */
-    List<VilleDto> getVilleEntre(Integer code, Integer min, Integer max) throws ExceptionFonctionnelle;
+    List<VilleDto> getVilleEntre(String code, Integer min, Integer max) throws ExceptionFonctionnelle;
 
 }

@@ -45,39 +45,31 @@ public class VilleController implements IVilleController {
     private final IVilleService villeService;
     private final IDepartementService departementService;
     private final VilleDto villeDto;
-    private final PdfExportService pdfExportService;
     private final CsvExportService csvExportService;
 
-    VilleController(IVilleService villeService, VilleDto villeDto,IDepartementService departementService,PdfExportService pdfExportService, CsvExportService csvExportService) {
+    VilleController(IVilleService villeService, VilleDto villeDto,IDepartementService departementService, CsvExportService csvExportService) {
         this.villeService = villeService;
         this.villeDto = villeDto;
         this.departementService = departementService;
-        this.pdfExportService = pdfExportService;
         this.csvExportService = csvExportService;
     }
 
     
-    /** (non-Javadoc)
-     * @see IVilleController#getAllVilles()
-     */
+
     @Override
     @GetMapping
     public List<VilleDto> getAllVilles() {
         return villeService.extractVilles().stream().map(villeDto::toDto).toList();
     }
 
-    /** (non-Javadoc)
-     * @see IVilleController#extraireAllPaginateVilles(java.lang.Integer, int)
-     */
+
     @Override
     @GetMapping("/paginate/{page}")
     public List<VilleDto> extraireAllPaginateVilles(@PathVariable Integer page, @RequestParam(defaultValue = "10") int size) {
         return villeService.extractVillesPaginate(page, size).stream().map(villeDto::toDto).toList();
     }
 
-    /** (non-Javadoc)
-     * @see IVilleController#getVilleById(int)
-     */
+
     @Override
     @GetMapping("/{id}")
     public VilleDto getVilleById(@Parameter(description = "identifiant de la ville à récupérer",example = "34", required = true) @PathVariable int id) throws ExceptionFonctionnelle{
@@ -85,9 +77,7 @@ public class VilleController implements IVilleController {
     }
 
 
-    /** (non-Javadoc)
-     * @see IVilleController#insertVille(fr.diginamic.hello_tp1.dto.VilleDto)
-     */
+
     @Override
     @PostMapping
     public ResponseEntity<VilleDto> insertVille(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "ville à créer (avec idDepartement ou codeDepartement)", required = true) @Valid @RequestBody VilleDto newVilleDto)throws ExceptionFonctionnelle{
@@ -103,9 +93,6 @@ public class VilleController implements IVilleController {
     }
 
 
-    /** (non-Javadoc)
-     * @see IVilleController#insertVilles(java.util.List)
-     */
     @Override
     @PostMapping("/liste")
     public ResponseEntity<String> insertVilles(@RequestBody List<@Valid VilleDto> dtos) throws ExceptionFonctionnelle {
@@ -115,9 +102,7 @@ public class VilleController implements IVilleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dtos.size() + " villes ajoutées");
     }
 
-    /** (non-Javadoc)
-     * @see IVilleController#updateVille(int, fr.diginamic.hello_tp1.dto.VilleDto)
-     */
+
     @Override
     @PutMapping("/{id}")
     public ResponseEntity<List<VilleDto>> updateVille(@Parameter(description = "identifiant de la ville à modifier", example = "34", required = true) @PathVariable int id,
@@ -126,9 +111,7 @@ public class VilleController implements IVilleController {
         return ResponseEntity.ok(villeService.extractVilles().stream().map(villeDto::toDto).toList());
     }
 
-    /** (non-Javadoc)
-     * @see IVilleController#deleteVille(int)
-     */
+
     @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<List<VilleDto>> deleteVille(@Parameter(description = "identifiant de la ville à supprimer", example = "34", required = true) @PathVariable int id) throws ExceptionFonctionnelle {
@@ -137,18 +120,14 @@ public class VilleController implements IVilleController {
     }
 
 
-    /** (non-Javadoc)
-     * @see IVilleController#getVilleCommencePar(java.lang.String)
-     */
+
     @Override
     @GetMapping("/contiennent/{prefix}")
     public List<VilleDto> getVilleCommencePar(@PathVariable String prefix)throws ExceptionFonctionnelle {
         return villeService.extractVilles(prefix).stream().map(villeDto::toDto).toList();
     }
     
-    /** (non-Javadoc)
-     * @see IVilleController#getVillePopSuperieur(java.lang.Integer)
-     */
+
     @Override
     @GetMapping("/population/{min}")
     public List<VilleDto> getVillePopSuperieur(@PathVariable Integer min)throws ExceptionFonctionnelle {
@@ -156,17 +135,25 @@ public class VilleController implements IVilleController {
     }
     
 
-    /** (non-Javadoc)
-     * @see IVilleController#getVilleEntre(java.lang.Integer, java.lang.Integer)
-     */
+ 
     @Override
     @GetMapping("/population/{min}/{max}")
     public List<VilleDto> getVilleEntre(@PathVariable Integer min,@PathVariable Integer max)throws ExceptionFonctionnelle {
         return villeService.extractVilles(min, max).stream().map(villeDto::toDto).toList();
     }
 
+    /**
+     * Exporte au format CSV les villes dont la population est supérieure à un minimum.
+     * Colonnes : nom, population, code département, nom département.
+     *
+     * @param min population minimum
+     * @param response réponse HTTP dans laquelle le CSV est écrit
+     * @throws IOException en cas d'erreur d'écriture
+     * @throws DocumentException non utilisée pour le CSV
+     * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
+     */
     @GetMapping("export/csv/{min}")
-    public void ficheFilm(@PathVariable Integer min,HttpServletResponse response)throws IOException,DocumentException, ExceptionFonctionnelle {
+    public void exportVilles(@PathVariable Integer min,HttpServletResponse response)throws IOException,DocumentException, ExceptionFonctionnelle {
         
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"villes.csv\"");
@@ -175,16 +162,5 @@ public class VilleController implements IVilleController {
         response.flushBuffer();
     }
 
-    @GetMapping("/export/pdf/{code}")
-    public void ficheDepartement(@PathVariable String code,HttpServletResponse response)throws IOException,DocumentException, ExceptionFonctionnelle {
-        response.setContentType("application/pdf");
-        String nom = departementService.extractByCode(code).getNom();
-        response.setHeader("Content-Disposition", "attachment; filename=\""+ nom + ".pdf\"");
-
-        Document document = new Document(PageSize.A4);
-        PdfWriter.getInstance(document, response.getOutputStream());
-
-        pdfExportService.genererPdf(code, document);
-    }
     
 }

@@ -5,6 +5,9 @@ import java.util.List;
 import fr.diginamic.hello_tp1.entities.Ville;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 
+/**
+ * Contrat du service métier des villes.
+ */
 public interface IVilleService {
 
     /**
@@ -14,7 +17,14 @@ public interface IVilleService {
      */
     List<Ville> extractVilles();
 
-    List<Ville> extractVillesPaginate(int page, int size);
+    /**
+     * Renvoie une page de villes.
+     *
+     * @param page numéro de la page (commence à 0)
+     * @param size nombre de villes par page
+     * @return liste des villes de la page demandée
+     */
+    List<Ville> extractVillesPaginate(Integer page, Integer size);
 
     /**
      * Renvoie une ville à partir de son identifiant.
@@ -42,7 +52,7 @@ public interface IVilleService {
      * @return liste des villes trouvées
      * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
      */
-    List<Ville> extractVilles(int min, int max) throws ExceptionFonctionnelle;
+    List<Ville> extractVilles(Integer min, Integer max) throws ExceptionFonctionnelle;
 
     /**
      * Renvoie les villes d'un département dont la population est comprise entre un min et un max.
@@ -53,7 +63,7 @@ public interface IVilleService {
      * @return liste des villes trouvées
      * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
      */
-    List<Ville> extractVilles(int code, int min, int max) throws ExceptionFonctionnelle;
+    List<Ville> extractVilles(String code, Integer min, Integer max) throws ExceptionFonctionnelle;
 
     /**
      * Renvoie les n plus grandes villes d'un département.
@@ -63,7 +73,7 @@ public interface IVilleService {
      * @return liste des villes triées par population décroissante
      * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
      */
-    List<Ville> extractVillesDeDep(Integer code, int nbVille) throws ExceptionFonctionnelle;
+    List<Ville> extractVillesDeDep(String code, Integer nbVille) throws ExceptionFonctionnelle;
 
     /**
      * Ajoute une nouvelle ville.

@@ -20,15 +20,30 @@ import fr.diginamic.hello_tp1.entities.Ville;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.hello_tp1.services.interfaces.IDepartementService;
 
+/**
+ * Service de génération des exports PDF.
+ */
 @Service 
 public class PdfExportService {
     
     private IDepartementService departementService;
     
+    /**
+     * @param departementService service des départements
+     */
     public PdfExportService(IDepartementService departementService) {
         this.departementService = departementService;
     }
 
+    /**
+     * Écrit dans le document la fiche d'un département : code, nom et tableau de ses villes.
+     *
+     * @param code code du département
+     * @param document document PDF à remplir
+     * @throws DocumentException en cas d'erreur de génération du PDF
+     * @throws IOException en cas d'erreur de police ou d'écriture
+     * @throws ExceptionFonctionnelle si aucun département ne correspond à ce code
+     */
     public void genererPdf(String code, Document document) throws DocumentException, IOException, ExceptionFonctionnelle{
         Departement departement = departementService.extractByCode(code);
         document.open();

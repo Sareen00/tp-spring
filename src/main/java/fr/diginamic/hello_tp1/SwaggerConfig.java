@@ -8,8 +8,16 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 
+/**
+ * Configuration de la documentation Swagger (OpenAPI) de l'API.
+ */
 @Configuration
 public class SwaggerConfig {
+    /**
+     * Définit les informations générales affichées dans Swagger UI.
+     *
+     * @return la configuration OpenAPI
+     */
     @Bean
     public OpenAPI customOpenAPI(){
         return new OpenAPI()

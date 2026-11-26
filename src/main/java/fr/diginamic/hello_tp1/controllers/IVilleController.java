@@ -14,6 +14,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
+/**
+ * Contrat du contrôleur REST des villes, documenté pour Swagger.
+ */
 public interface IVilleController {
 
     /**
@@ -31,6 +34,13 @@ public interface IVilleController {
     })
     List<VilleDto> getAllVilles();
 
+    /**
+     * Renvoie une page de villes.
+     *
+     * @param page numéro de la page (commence à 0)
+     * @param size nombre de villes par page
+     * @return liste des villes de la page demandée
+     */
     List<VilleDto> extraireAllPaginateVilles(Integer page, int size);
 
     /**

@@ -1,14 +1,11 @@
 package fr.diginamic.hello_tp1.services;
 
-
-import java.io.IOException;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-
+import fr.diginamic.hello_tp1.dto.DepartementApiDto;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.hello_tp1.repositories.DepartementRepository;
@@ -19,15 +16,31 @@ import fr.diginamic.hello_tp1.services.interfaces.IDepartementService;
  */
 @Service
 public class DepartementService implements IDepartementService {
-
-    // @Autowired
-    // private DepartementDao departementDao;
     private final DepartementRepository departementRepository;
-
+    @Value("${application.init}")
+    private boolean init; 
 
     DepartementService(DepartementRepository departementRepository) {
         this.departementRepository = departementRepository;
     }
+
+
+    @Override 
+    @Transactional 
+    public void initData() throws ExceptionFonctionnelle{
+        if (!init) {return;}
+        RestTemplate restTemplate = new RestTemplate();
+        DepartementApiDto[] departementApiDtos = restTemplate.getForObject("https://geo.api.gouv.fr/departements", DepartementApiDto[].class);
+        for (DepartementApiDto departementApiDto : departementApiDtos) {
+            Departement departement = departementRepository.findByCode(departementApiDto.getCode());
+            if (departement != null) {
+                departement.setNom(departementApiDto.getNom());
+                departementRepository.save(departement);
+            }
+        }
+    }
+
+
 
 
     @Override
@@ -36,11 +49,13 @@ public class DepartementService implements IDepartementService {
     }
 
 
+
     @Override
     public Departement extractById(Integer id)throws ExceptionFonctionnelle{
         Departement departement = departementRepository.findById(id).orElseThrow(() -> new ExceptionFonctionnelle("Aucune ville avec l'id " + id));
         return departement;
     }
+
 
 
     @Override
@@ -51,6 +66,7 @@ public class DepartementService implements IDepartementService {
     }
 
 
+
     @Override
     public Departement extractByIdOrCode(Integer id, String code) {
         Departement dep = null;
@@ -58,6 +74,7 @@ public class DepartementService implements IDepartementService {
         if (dep == null && code != null) dep = departementRepository.findByCode(code);
         return dep;
     }
+
 
 
     @Override
@@ -70,6 +87,7 @@ public class DepartementService implements IDepartementService {
     }
 
 
+
     @Override
     @Transactional
     public void updateDepartement(Integer id, Departement newDepartement) throws ExceptionFonctionnelle {
@@ -78,8 +96,9 @@ public class DepartementService implements IDepartementService {
         departement.setCode(newDepartement.getCode());
         departement.setNom(newDepartement.getNom());
         departement.setVilles(newDepartement.getVilles());
-        departementRepository.save(newDepartement);
+        departementRepository.save(departement);
     }
+
 
 
     @Override
@@ -90,6 +109,7 @@ public class DepartementService implements IDepartementService {
     }
 
 
+
     @Override
     @Transactional
     public Departement creerDepartement(String code) {
@@ -97,11 +117,5 @@ public class DepartementService implements IDepartementService {
         dep.setCode(code);
         departementRepository.save(dep);
         return dep;
-    }
-
-    public void genererPdf(String code,Document document) throws DocumentException, IOException, ExceptionFonctionnelle{
-        Departement departement = extractByCode(code);
-        document.open();
-        document.addTitle(departement.getNom());
     }
 }

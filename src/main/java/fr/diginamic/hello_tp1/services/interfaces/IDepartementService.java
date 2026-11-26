@@ -3,6 +3,9 @@ package fr.diginamic.hello_tp1.services.interfaces;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 
+/**
+ * Contrat du service métier des départements.
+ */
 public interface IDepartementService {
 
     /**
@@ -71,5 +74,14 @@ public interface IDepartementService {
      * @return le département créé
      */
     Departement creerDepartement(String code);
+
+    /**
+     * Met à jour le nom des départements en base à partir de l'API geo.api.gouv.fr.
+     * Ne fait rien si la propriété application.init vaut false.
+     *
+     * @throws ExceptionFonctionnelle en cas d'erreur fonctionnelle
+     */
+    void initData()throws ExceptionFonctionnelle;
+
 
 }

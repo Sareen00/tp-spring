@@ -1,5 +1,7 @@
 package fr.diginamic.hello_tp1.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +46,7 @@ public class DepartementService implements IDepartementService {
 
 
     @Override
-    public Iterable<Departement> extractAll(){
+    public List<Departement> extractAll(){
         return departementRepository.findAll();
     }
 

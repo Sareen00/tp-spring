@@ -19,6 +19,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import fr.diginamic.hello_tp1.dto.DepartementDto;
 import fr.diginamic.hello_tp1.dto.VilleDto;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
@@ -39,40 +40,32 @@ public class DepartementController implements IDepartementController {
     private final IDepartementService departementService;
     private final VilleDto villeDto;
     private final PdfExportService pdfExportService;
+    private final DepartementDto departementDto;
 
-
-    DepartementController(IVilleService villeService, VilleDto villeDto, IDepartementService departementService,PdfExportService pdfExportService) {
+    DepartementController(IVilleService villeService, VilleDto villeDto, IDepartementService departementService,PdfExportService pdfExportService,DepartementDto departementDto) {
         this.villeService = villeService;
         this.villeDto = villeDto;
         this.departementService = departementService;
         this.pdfExportService = pdfExportService;
+        this.departementDto = departementDto;
     }
 
 
-    /**
-     * (non-Javadoc)
-     * @see IDepartementController#getAllDepartements()
-     */
+
     @Override
     @GetMapping
-    public Iterable<Departement> getAllDepartements() {
-        return departementService.extractAll();
+    public List<DepartementDto> getAllDepartements() {
+        return departementService.extractAll().stream().map(departementDto::toDto).toList();
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IDepartementController#getDepartementById(int)
-     */
+
     @Override
     @GetMapping("/{id}")
-    public Departement getDepartementById(@PathVariable int id) throws ExceptionFonctionnelle{
-        return departementService.extractById(id);    
+    public DepartementDto getDepartementById(@PathVariable int id) throws ExceptionFonctionnelle{
+        return departementDto.toDto(departementService.extractById(id));    
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IDepartementController#insertDepartement(Departement)
-     */
+
     @Override
     @PostMapping
     public ResponseEntity<String> insertDepartement(@Valid @RequestBody Departement newDepartement)throws ExceptionFonctionnelle{
@@ -80,10 +73,7 @@ public class DepartementController implements IDepartementController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Departement ajoutée avec succès");
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IDepartementController#updateDepartement(int, Departement)
-     */
+
     @Override
     @PutMapping("/{id}")
     public ResponseEntity<String> updateDepartement( @PathVariable int id,@Valid @RequestBody Departement newDepartement) throws ExceptionFonctionnelle {
@@ -91,10 +81,7 @@ public class DepartementController implements IDepartementController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Departement modifiée avec succès");
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IDepartementController#deleteDepartement(int)
-     */
+
     @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDepartement(@PathVariable int id) throws ExceptionFonctionnelle {
@@ -102,20 +89,14 @@ public class DepartementController implements IDepartementController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Departement supprimée avec succès");
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IDepartementController#getPlusGrandeVille(String, Integer)
-     */
+
     @Override
     @GetMapping("/population/{code}/{nb}")
     public List<VilleDto> getPlusGrandeVille(@PathVariable String code,@PathVariable Integer nb)throws ExceptionFonctionnelle {
         return villeService.extractVillesDeDep(code, nb).stream().map(villeDto::toDto).toList();
     }
     
-    /**
-     * (non-Javadoc)
-     * @see IDepartementController#getVilleEntre(String, Integer, Integer)
-     */
+
     @Override
     @GetMapping("/population/{code}/{min}/{max}")
     public List<VilleDto> getVilleEntre(@PathVariable String code,@PathVariable Integer min,@PathVariable Integer max)throws ExceptionFonctionnelle {

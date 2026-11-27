@@ -11,11 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import fr.diginamic.hello_tp1.entities.Ville;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
-import fr.diginamic.hello_tp1.repositories.DepartementRepository;
 import fr.diginamic.hello_tp1.services.interfaces.IDepartementService;
 import fr.diginamic.hello_tp1.services.interfaces.IVilleService;
 import jakarta.transaction.Transactional;

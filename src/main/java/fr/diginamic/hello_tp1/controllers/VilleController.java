@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.pdf.PdfWriter;
 
 import fr.diginamic.hello_tp1.dto.VilleDto;
 import fr.diginamic.hello_tp1.entities.Departement;
@@ -19,7 +16,6 @@ import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 import fr.diginamic.hello_tp1.services.interfaces.IDepartementService;
 import fr.diginamic.hello_tp1.services.interfaces.IVilleService;
 import fr.diginamic.hello_tp1.services.utils.CsvExportService;
-import fr.diginamic.hello_tp1.services.utils.PdfExportService;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

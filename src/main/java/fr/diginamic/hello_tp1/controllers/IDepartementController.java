@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import fr.diginamic.hello_tp1.dto.DepartementDto;
 import fr.diginamic.hello_tp1.dto.VilleDto;
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
@@ -18,7 +19,7 @@ public interface IDepartementController {
      *
      * @return liste des départements
      */
-    Iterable<Departement> getAllDepartements();
+    List<DepartementDto> getAllDepartements();
 
     /**
      * Renvoie un département à partir de son identifiant.
@@ -27,7 +28,7 @@ public interface IDepartementController {
      * @return le département trouvé
      * @throws ExceptionFonctionnelle si aucun département ne correspond à cet identifiant
      */
-    Departement getDepartementById(int id) throws ExceptionFonctionnelle;
+    DepartementDto getDepartementById(int id) throws ExceptionFonctionnelle;
 
     /**
      * Ajoute un nouveau département.

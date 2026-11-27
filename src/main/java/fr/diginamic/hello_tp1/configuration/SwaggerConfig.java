@@ -1,4 +1,4 @@
-package fr.diginamic.hello_tp1;
+package fr.diginamic.hello_tp1.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

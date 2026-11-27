@@ -1,5 +1,7 @@
 package fr.diginamic.hello_tp1.services.interfaces;
 
+import java.util.List;
+
 import fr.diginamic.hello_tp1.entities.Departement;
 import fr.diginamic.hello_tp1.exceptions.ExceptionFonctionnelle;
 
@@ -13,7 +15,7 @@ public interface IDepartementService {
      *
      * @return liste des départements
      */
-    Iterable<Departement> extractAll();
+    List<Departement> extractAll();
 
     /**
      * Renvoie un département à partir de son identifiant.

@@ -1,6 +1,8 @@
 package fr.diginamic.hello_tp1.repositories;
 
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 
 import fr.diginamic.hello_tp1.entities.Departement;
@@ -9,6 +11,10 @@ import fr.diginamic.hello_tp1.entities.Departement;
  * Repository Spring Data des départements.
  */
 public interface DepartementRepository extends CrudRepository<Departement, Integer>{
+
+
+    List<Departement> findAll();
+
     /**
      * Recherche un département par son code.
      *

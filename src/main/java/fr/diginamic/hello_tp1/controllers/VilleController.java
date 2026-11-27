@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +44,12 @@ public class VilleController implements IVilleController {
     private final VilleDto villeDto;
     private final CsvExportService csvExportService;
 
+    /**
+     * @param villeService service des villes
+     * @param villeDto convertisseur Ville / VilleDto
+     * @param departementService service des départements
+     * @param csvExportService service de génération des CSV
+     */
     VilleController(IVilleService villeService, VilleDto villeDto,IDepartementService departementService, CsvExportService csvExportService) {
         this.villeService = villeService;
         this.villeDto = villeDto;
@@ -53,6 +60,7 @@ public class VilleController implements IVilleController {
     
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping
     public List<VilleDto> getAllVilles() {
         return villeService.extractVilles().stream().map(villeDto::toDto).toList();
@@ -60,6 +68,7 @@ public class VilleController implements IVilleController {
 
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/paginate/{page}")
     public List<VilleDto> extraireAllPaginateVilles(@PathVariable Integer page, @RequestParam(defaultValue = "10") int size) {
         return villeService.extractVillesPaginate(page, size).stream().map(villeDto::toDto).toList();
@@ -67,6 +76,7 @@ public class VilleController implements IVilleController {
 
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/{id}")
     public VilleDto getVilleById(@Parameter(description = "identifiant de la ville à récupérer",example = "34", required = true) @PathVariable int id) throws ExceptionFonctionnelle{
         return villeDto.toDto(villeService.extractVille(id));    
@@ -75,6 +85,7 @@ public class VilleController implements IVilleController {
 
 
     @Override
+    @Secured ({"ROLE_ADMIN"})
     @PostMapping
     public ResponseEntity<VilleDto> insertVille(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "ville à créer (avec idDepartement ou codeDepartement)", required = true) @Valid @RequestBody VilleDto newVilleDto)throws ExceptionFonctionnelle{
         Departement dep = departementService.extractByIdOrCode(newVilleDto.getIdDepartement(), newVilleDto.getCodeDepartement());
@@ -90,6 +101,7 @@ public class VilleController implements IVilleController {
 
 
     @Override
+    @Secured ({"ROLE_ADMIN"})
     @PostMapping("/liste")
     public ResponseEntity<String> insertVilles(@RequestBody List<@Valid VilleDto> dtos) throws ExceptionFonctionnelle {
         for (VilleDto dto : dtos) {
@@ -100,6 +112,7 @@ public class VilleController implements IVilleController {
 
 
     @Override
+    @Secured ({"ROLE_ADMIN"})
     @PutMapping("/{id}")
     public ResponseEntity<List<VilleDto>> updateVille(@Parameter(description = "identifiant de la ville à modifier", example = "34", required = true) @PathVariable int id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody (description = "nouvelles valeurs de la ville", required = true) @Valid @RequestBody VilleDto newVilleDto) throws ExceptionFonctionnelle {
@@ -109,6 +122,7 @@ public class VilleController implements IVilleController {
 
 
     @Override
+    @Secured ({"ROLE_ADMIN"})
     @DeleteMapping("/{id}")
     public ResponseEntity<List<VilleDto>> deleteVille(@Parameter(description = "identifiant de la ville à supprimer", example = "34", required = true) @PathVariable int id) throws ExceptionFonctionnelle {
         villeService.deleteVille(id);
@@ -118,6 +132,7 @@ public class VilleController implements IVilleController {
 
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/contiennent/{prefix}")
     public List<VilleDto> getVilleCommencePar(@PathVariable String prefix)throws ExceptionFonctionnelle {
         return villeService.extractVilles(prefix).stream().map(villeDto::toDto).toList();
@@ -125,6 +140,7 @@ public class VilleController implements IVilleController {
     
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/population/{min}")
     public List<VilleDto> getVillePopSuperieur(@PathVariable Integer min)throws ExceptionFonctionnelle {
         return villeService.extractVilles(min, Integer.MAX_VALUE).stream().map(villeDto::toDto).toList();
@@ -133,6 +149,7 @@ public class VilleController implements IVilleController {
 
  
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/population/{min}/{max}")
     public List<VilleDto> getVilleEntre(@PathVariable Integer min,@PathVariable Integer max)throws ExceptionFonctionnelle {
         return villeService.extractVilles(min, max).stream().map(villeDto::toDto).toList();
@@ -148,6 +165,7 @@ public class VilleController implements IVilleController {
      * @throws DocumentException non utilisée pour le CSV
      * @throws ExceptionFonctionnelle si aucune ville n'est trouvée
      */
+    @Secured ({"ROLE_ADMIN"})
     @GetMapping("export/csv/{min}")
     public void exportVilles(@PathVariable Integer min,HttpServletResponse response)throws IOException,DocumentException, ExceptionFonctionnelle {
         

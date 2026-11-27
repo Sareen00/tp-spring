@@ -13,6 +13,9 @@ public class InitDataRunner implements CommandLineRunner{
 
     private final IDepartementService departementService;
 
+    /**
+     * @param departementService service des départements
+     */
     InitDataRunner(IDepartementService departementService) {
         this.departementService = departementService;
     }

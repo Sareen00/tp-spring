@@ -17,6 +17,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 
+/**
+ * Utilisateur de l'application, stocké en base et utilisé par Spring Security.
+ */
 @Entity 
 public class Utilisateur implements UserDetails{
     @Id 
@@ -36,9 +39,17 @@ public class Utilisateur implements UserDetails{
 
     
 
+    /**
+     * Constructeur vide requis par JPA.
+     */
     public Utilisateur() {
     }
 
+    /**
+     * @param username identifiant de connexion
+     * @param password mot de passe déjà hashé
+     * @param role rôle de l'utilisateur
+     */
     public Utilisateur(String username, String password, Role role) {
         this.username=username;
         this.password =password;

@@ -1,8 +1,12 @@
 package fr.diginamic.hello_tp1.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -21,7 +25,11 @@ public class DepartementService implements IDepartementService {
     private final DepartementRepository departementRepository;
     @Value("${application.init}")
     private boolean init; 
+    private static final Logger LOG = LoggerFactory.getLogger(DepartementService.class);
 
+    /**
+     * @param departementRepository repository des départements
+     */
     DepartementService(DepartementRepository departementRepository) {
         this.departementRepository = departementRepository;
     }
@@ -85,6 +93,9 @@ public class DepartementService implements IDepartementService {
         if (departementRepository.findByCode(departement.getCode()) != null) {
             throw new ExceptionFonctionnelle("Un département avec le code " + departement.getCode() + " existe déjà");
         }
+        departement.setUserMaj(getUsername());
+        departement.setDateMaj(LocalDateTime.now());
+        LOG.info("{} a ajouté le département {} - {}", getUsername(), departement.getCode(), departement.getNom());
         departementRepository.save(departement);
     }
 
@@ -98,6 +109,9 @@ public class DepartementService implements IDepartementService {
         departement.setCode(newDepartement.getCode());
         departement.setNom(newDepartement.getNom());
         departement.setVilles(newDepartement.getVilles());
+        departement.setUserMaj(getUsername());
+        departement.setDateMaj(LocalDateTime.now());
+        LOG.info("{} a modifié le département {}", getUsername(), id);
         departementRepository.save(departement);
     }
 
@@ -107,6 +121,7 @@ public class DepartementService implements IDepartementService {
     @Transactional 
     public void deleteDepartement(Integer id) throws ExceptionFonctionnelle {
         Departement Departement = departementRepository.findById(id).orElseThrow(() -> new ExceptionFonctionnelle("Aucun département avec l'id " + id));
+        LOG.info("{} a supprimé le département {}", getUsername(), id);
         departementRepository.delete(Departement);
     }
 
@@ -119,5 +134,10 @@ public class DepartementService implements IDepartementService {
         dep.setCode(code);
         departementRepository.save(dep);
         return dep;
+    }
+
+
+    private String getUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

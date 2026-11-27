@@ -1,11 +1,13 @@
 package fr.diginamic.hello_tp1.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,9 @@ public class VilleService implements IVilleService {
     private final VilleRepository villeRepository;
 
 
+    /**
+     * @param villeRepository repository des villes
+     */
     VilleService(VilleRepository villeRepository) {
         this.villeRepository = villeRepository;
     }
@@ -78,10 +83,7 @@ public class VilleService implements IVilleService {
     }
 
 
-    /**
-     * (non-Javadoc)
-     * @see IVilleService#extractVilles(Integer, Integer)
-     */
+
     @Override
     public List<Ville> extractVilles(Integer min, Integer max)throws ExceptionFonctionnelle{
         if (villeRepository.findByPopulationBetweenOrderByPopulationDesc(min, max).isEmpty()) {
@@ -90,10 +92,7 @@ public class VilleService implements IVilleService {
         return villeRepository.findByPopulationBetweenOrderByPopulationDesc(min, max);
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IVilleService#extractVilles(String, Integer, Integer)
-     */
+
     @Override
     public List<Ville> extractVilles(String code, Integer min, Integer max)throws ExceptionFonctionnelle{
         if (villeRepository.findByDepartementCodeAndPopulationBetweenOrderByPopulationDesc(code, min, max).isEmpty()) {
@@ -102,10 +101,7 @@ public class VilleService implements IVilleService {
         return villeRepository.findByDepartementCodeAndPopulationBetweenOrderByPopulationDesc(code, min, max);
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IVilleService#extractVillesDeDep(String, Integer)
-     */
+
     @Override
     public List<Ville> extractVillesDeDep(String code, Integer nbVille)throws ExceptionFonctionnelle{
         if (villeRepository.findByDepartementCodeOrderByPopulationDesc(code,Limit.of(nbVille)).isEmpty()) {
@@ -115,25 +111,22 @@ public class VilleService implements IVilleService {
     }
 
 
-    /**
-     * (non-Javadoc)
-     * @see IVilleService#insertVille(Ville)
-     */
+
     @Override
     @Transactional 
     public List<Ville> insertVille(Ville ville)throws ExceptionFonctionnelle{
         if (villeRepository.existsByNomIgnoreCase(ville.getNom())) {
                 throw new ExceptionFonctionnelle("Une ville avec ce nom existe déjà");
         }
+        ville.setUserMaj(getUsername());
+        ville.setDateMaj(LocalDateTime.now());
         villeRepository.save(ville);
+        LOG.info("{} a ajouté la ville {} - {}", getUsername(), ville.getId(), ville.getNom());
         return villeRepository.findAll();
     }
 
 
-    /**
-     * (non-Javadoc)
-     * @see IVilleService#updateVille(Integer, Ville)
-     */
+
     @Override
     @Transactional
     public List<Ville> updateVille(Integer id, Ville newVille) throws ExceptionFonctionnelle {
@@ -143,19 +136,26 @@ public class VilleService implements IVilleService {
         if (newVille.getDepartement() != null) {
             ville.setDepartement(newVille.getDepartement());
         }
+        ville.setUserMaj(getUsername());
+        ville.setDateMaj(LocalDateTime.now());
         villeRepository.save(ville);
+        LOG.info("{} a modifié la ville {}", getUsername(), id);
         return villeRepository.findAll();  
     }
 
-    /**
-     * (non-Javadoc)
-     * @see IVilleService#deleteVille(Integer)
-     */
+
     @Override
     @Transactional
     public List<Ville> deleteVille(Integer id) throws ExceptionFonctionnelle {
         Ville ville = villeRepository.findById(id).orElseThrow(() -> new ExceptionFonctionnelle("Aucune ville avec l'id " + id));
         villeRepository.delete(ville);
+        LOG.info("{} a supprimé la ville {}", getUsername(), id);
         return villeRepository.findAll();
+    }
+
+
+    
+    private String getUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

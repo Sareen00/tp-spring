@@ -13,6 +13,9 @@ import jakarta.persistence.Id;
 
 import jakarta.persistence.ManyToMany;
 
+/**
+ * Rôle d'un utilisateur (ex : ROLE_USER, ROLE_ADMIN), utilisé par Spring Security comme autorité.
+ */
 @Entity 
 public class Role implements GrantedAuthority{
     @Id 
@@ -23,6 +26,9 @@ public class Role implements GrantedAuthority{
     @ManyToMany (mappedBy = "roles")
     private List<Utilisateur> utilisateurs =new ArrayList<>();
     
+    /**
+     * @param nom nom du rôle, préfixé par ROLE_
+     */
     public Role(String nom) {
         this.nom = nom;
     }
@@ -30,6 +36,9 @@ public class Role implements GrantedAuthority{
     
 
 
+    /**
+     * Constructeur vide requis par JPA.
+     */
     public Role() {
     }
 

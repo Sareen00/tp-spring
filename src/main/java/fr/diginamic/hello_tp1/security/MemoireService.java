@@ -1,18 +1,25 @@
 package fr.diginamic.hello_tp1.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 import fr.diginamic.hello_tp1.entities.Role;
 import fr.diginamic.hello_tp1.entities.Utilisateur;
 
+/**
+ * Ancienne implémentation en mémoire de UserDetailsService (TP2), remplacée par JpaUserDetailsService.
+ */
 public class MemoireService implements UserDetailsService{
-    @Autowired 
-    private PasswordEncoder encoder;
+    private final PasswordEncoder encoder;
+
+    /**
+     * @param encoder encodeur des mots de passe
+     */
+    MemoireService(PasswordEncoder encoder) {
+        this.encoder = encoder;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

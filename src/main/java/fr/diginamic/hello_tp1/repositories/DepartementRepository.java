@@ -13,6 +13,9 @@ import fr.diginamic.hello_tp1.entities.Departement;
 public interface DepartementRepository extends CrudRepository<Departement, Integer>{
 
 
+    /**
+     * @return tous les départements
+     */
     List<Departement> findAll();
 
     /**

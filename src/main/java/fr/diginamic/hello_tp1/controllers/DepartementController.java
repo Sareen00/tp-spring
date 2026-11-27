@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,13 @@ public class DepartementController implements IDepartementController {
     private final PdfExportService pdfExportService;
     private final DepartementDto departementDto;
 
+    /**
+     * @param villeService service des villes
+     * @param villeDto convertisseur Ville / VilleDto
+     * @param departementService service des départements
+     * @param pdfExportService service de génération des PDF
+     * @param departementDto convertisseur Departement / DepartementDto
+     */
     DepartementController(IVilleService villeService, VilleDto villeDto, IDepartementService departementService,PdfExportService pdfExportService,DepartementDto departementDto) {
         this.villeService = villeService;
         this.villeDto = villeDto;
@@ -53,6 +61,7 @@ public class DepartementController implements IDepartementController {
 
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping
     public List<DepartementDto> getAllDepartements() {
         return departementService.extractAll().stream().map(departementDto::toDto).toList();
@@ -60,6 +69,7 @@ public class DepartementController implements IDepartementController {
 
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/{id}")
     public DepartementDto getDepartementById(@PathVariable int id) throws ExceptionFonctionnelle{
         return departementDto.toDto(departementService.extractById(id));    
@@ -67,6 +77,7 @@ public class DepartementController implements IDepartementController {
 
 
     @Override
+    @Secured ({"ROLE_ADMIN"})
     @PostMapping
     public ResponseEntity<String> insertDepartement(@Valid @RequestBody Departement newDepartement)throws ExceptionFonctionnelle{
         departementService.insertDepartement(newDepartement);
@@ -75,6 +86,7 @@ public class DepartementController implements IDepartementController {
 
 
     @Override
+    @Secured ({"ROLE_ADMIN"})
     @PutMapping("/{id}")
     public ResponseEntity<String> updateDepartement( @PathVariable int id,@Valid @RequestBody Departement newDepartement) throws ExceptionFonctionnelle {
         departementService.updateDepartement(id,newDepartement);
@@ -83,6 +95,7 @@ public class DepartementController implements IDepartementController {
 
 
     @Override
+    @Secured ({"ROLE_ADMIN"})
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDepartement(@PathVariable int id) throws ExceptionFonctionnelle {
         departementService.deleteDepartement(id);
@@ -91,6 +104,7 @@ public class DepartementController implements IDepartementController {
 
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/population/{code}/{nb}")
     public List<VilleDto> getPlusGrandeVille(@PathVariable String code,@PathVariable Integer nb)throws ExceptionFonctionnelle {
         return villeService.extractVillesDeDep(code, nb).stream().map(villeDto::toDto).toList();
@@ -98,14 +112,12 @@ public class DepartementController implements IDepartementController {
     
 
     @Override
+    @Secured ({"ROLE_USER","ROLE_ADMIN"})
     @GetMapping("/population/{code}/{min}/{max}")
     public List<VilleDto> getVilleEntre(@PathVariable String code,@PathVariable Integer min,@PathVariable Integer max)throws ExceptionFonctionnelle {
         return villeService.extractVilles(code, min, max).stream().map(villeDto::toDto).toList();
     }
 
-
-
-    
     /**
      * Exporte au format PDF la fiche d'un département : code, nom et liste de ses villes.
      *
@@ -115,6 +127,7 @@ public class DepartementController implements IDepartementController {
      * @throws DocumentException en cas d'erreur de génération du PDF
      * @throws ExceptionFonctionnelle si aucun département ne correspond à ce code
      */
+    @Secured ({"ROLE_ADMIN"})
     @GetMapping("/export/pdf/{code}")
     public void ficheDepartement(@PathVariable String code,HttpServletResponse response)throws IOException,DocumentException, ExceptionFonctionnelle {
         response.setContentType("application/pdf");

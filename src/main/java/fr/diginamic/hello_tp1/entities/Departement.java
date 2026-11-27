@@ -1,5 +1,6 @@
 package fr.diginamic.hello_tp1.entities;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,12 +19,12 @@ public class Departement {
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     @Size(min = 2, message = "{departement.nom.min}")
     private String nom;
-
-
     private String code;
+
+    private String userMaj;
+    private LocalDateTime dateMaj;
 
     @OneToMany (mappedBy = "departement")
     private Set<Ville> villes = new HashSet<>();
@@ -90,4 +91,35 @@ public class Departement {
     public void setVilles(Set<Ville> villes) {
         this.villes = villes;
     }
+
+    /**
+     * @return nom de l'utilisateur ayant fait la dernière mise à jour
+     */
+    public String getUserMaj() {
+        return userMaj;
+    }
+
+    /**
+     * @param userMaj utilisateur à définir
+     */
+    public void setUserMaj(String userMaj) {
+        this.userMaj = userMaj;
+    }
+
+    /**
+     * @return date et heure de la dernière mise à jour
+     */
+    public LocalDateTime getDateMaj() {
+        return dateMaj;
+    }
+
+    /**
+     * @param dateMaj date de mise à jour à définir
+     */
+    public void setDateMaj(LocalDateTime dateMaj) {
+        this.dateMaj = dateMaj;
+    }
+
+
+    
 }
